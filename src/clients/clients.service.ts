@@ -7,6 +7,7 @@ import {
 import { PG_CONNECTION } from 'src/db-module/db-module.module';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { CreateClientResponseDto } from './dto/response/create-clients.response.dto';
+import { Client } from 'src/map/client';
 
 @Injectable()
 export class ClientsService implements OnModuleInit {
@@ -89,5 +90,19 @@ export class ClientsService implements OnModuleInit {
     );
 
     return filteredMap;
+  }
+
+  async shortestPath(clients: Client[]) {
+    clients.push(new Client(-1, 0, 0));
+    clients.sort((a, b) => a.angle() - b.angle());
+
+    let totalDistance = 0;
+    for (let i = 0; i < clients.length - 1; i++) {
+      totalDistance += clients[i].distanceTo(clients[i + 1]);
+    }
+
+    clients.pop();
+
+    return { totalDistance, clients };
   }
 }
