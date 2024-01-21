@@ -7,7 +7,6 @@ import {
 import { PG_CONNECTION } from 'src/db-module/db-module.module';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { CreateClientResponseDto } from './dto/response/create-clients.response.dto';
-import { Client } from 'src/map/client';
 
 @Injectable()
 export class ClientsService implements OnModuleInit {
@@ -29,7 +28,7 @@ export class ClientsService implements OnModuleInit {
     );
   }
 
-  async findAll(query: any) {
+  async findAll(query?: any) {
     let whereClause = '';
     const values = [];
     for (const key in query) {
@@ -39,7 +38,10 @@ export class ClientsService implements OnModuleInit {
     whereClause = whereClause.endsWith('AND ')
       ? whereClause.slice(0, -5)
       : whereClause;
-    const _query = `SELECT * FROM clients WHERE ${whereClause}`;
+    const _query =
+      whereClause != ''
+        ? `SELECT * FROM clients WHERE ${whereClause}`
+        : `SELECT * FROM clients`;
     const res = await this.conn.query(_query, values);
 
     return res.rows;
@@ -90,19 +92,5 @@ export class ClientsService implements OnModuleInit {
     );
 
     return filteredMap;
-  }
-
-  async shortestPath(clients: Client[]) {
-    clients.push(new Client(-1, 0, 0));
-    clients.sort((a, b) => a.angle() - b.angle());
-
-    let totalDistance = 0;
-    for (let i = 0; i < clients.length - 1; i++) {
-      totalDistance += clients[i].distanceTo(clients[i + 1]);
-    }
-
-    clients.pop();
-
-    return { totalDistance, clients };
   }
 }
