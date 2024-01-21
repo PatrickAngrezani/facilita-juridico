@@ -6,13 +6,12 @@ export class DijkstraService {
     Array(points.length).fill(Number.MAX_VALUE);
     const visited = new Set();
 
+    const orderOfVisits = [];
     let nextDistance;
     let nextPoint;
 
-    // Certifique-se de que o ponto (0, 0) está presente
-    if (!points.some((point) => point.x === 0 && point.y === 0)) {
-      points.push({ x: 0, y: 0 });
-    }
+    // Check coordinate (0, 0) is present
+    this.checkInitialCoordinate(points);
 
     let currentPoint = points.findIndex(
       (point) => point.x === 0 && point.y === 0,
@@ -22,13 +21,15 @@ export class DijkstraService {
 
     while (visited.size < points.length) {
       visited.add(currentPoint);
+      orderOfVisits.push(points[currentPoint]);
 
       if (visited.size === points.length - 1) {
         nextPoint = points.findIndex((point) => point.x === 0 && point.y === 0);
         currentDistance += nextDistance;
+        orderOfVisits.push(points[nextPoint]);
         break;
       } else {
-        // Encontre o próximo ponto mais próximo
+        // Find next nearest point
         nextPoint = -1;
         nextDistance = Number.MAX_VALUE;
 
@@ -47,7 +48,7 @@ export class DijkstraService {
         }
       }
 
-      // Atualize a distância total e mude para o próximo ponto mais próximo
+      //Update total distance
       currentDistance += nextDistance;
 
       if (nextPoint !== -1) {
@@ -55,6 +56,12 @@ export class DijkstraService {
       }
     }
 
-    return Number(currentDistance);
+    return { totalDistance: currentDistance.toFixed(2), orderOfVisits };
+  }
+
+  checkInitialCoordinate(points: { x: number; y: number }[]) {
+    if (!points.some((point) => point.x === 0 && point.y === 0)) {
+      points.push({ x: 0, y: 0 });
+    }
   }
 }
