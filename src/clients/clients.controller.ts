@@ -10,6 +10,7 @@ import {
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { DijkstraService } from 'src/dijkstra/dijkstra.service';
+import { User } from 'src/db-module/entity/user.entity';
 
 @Controller('clients')
 export class ClientsController {
@@ -29,15 +30,21 @@ export class ClientsController {
     return await this.clientsService.create(createClientDto);
   }
 
-  @Get('create-map')
+  @Get('/create-map')
   async map() {
     return await this.clientsService.map();
   }
 
-  @Get('dijkstra')
+  @Get('/ordinate-points')
   async dijkstra() {
-    const users = await this.clientsService.findAll();
-    const points = users.map((user) => ({ x: user.x, y: user.y }));
+    const users: User[] = await this.clientsService.findAll();
+
+    const points = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      x: user.x,
+      y: user.y,
+    }));
     return this.dijkstraService.dijkstra(points);
   }
 }

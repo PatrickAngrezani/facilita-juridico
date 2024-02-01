@@ -38,10 +38,13 @@ export class ClientsService implements OnModuleInit {
     whereClause = whereClause.endsWith('AND ')
       ? whereClause.slice(0, -5)
       : whereClause;
+
+    const orderByClause = 'ORDER BY name ASC';
+
     const _query =
       whereClause != ''
-        ? `SELECT * FROM clients WHERE ${whereClause}`
-        : `SELECT * FROM clients`;
+        ? `SELECT * FROM clients WHERE ${whereClause} ${orderByClause}`
+        : `SELECT * FROM clients ${orderByClause}`;
     const res = await this.conn.query(_query, values);
 
     return res.rows;
