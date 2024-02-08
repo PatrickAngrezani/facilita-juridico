@@ -4,13 +4,13 @@ import {
   Injectable,
   OnModuleInit,
 } from '@nestjs/common';
-import { PG_CONNECTION } from 'src/db-module/db-module.module';
+import { PG_CONNECTION } from '../db-module/db-module.module';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { CreateClientResponseDto } from './dto/response/create-clients.response.dto';
 
 @Injectable()
 export class ClientsService implements OnModuleInit {
-  constructor(@Inject(PG_CONNECTION) private conn: any) {}
+  constructor(@Inject(PG_CONNECTION) public conn: any) {}
 
   async onModuleInit() {
     await this.conn.query(

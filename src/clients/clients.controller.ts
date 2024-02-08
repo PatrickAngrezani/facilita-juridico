@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-clients.dto';
-import { DijkstraService } from 'src/dijkstra/dijkstra.service';
-import { User } from 'src/db-module/entity/user.entity';
+import { DijkstraService } from '../dijkstra/dijkstra.service';
+import { User } from '../db-module/entity/user.entity';
 
 @Controller('clients')
 export class ClientsController {
