@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsService } from '../../clients/clients.service';
-import { User } from '../../db-module/entity/user.entity';
+import { Client } from '../../db-module/entity/client.entity';
 import { ClientsController } from '../../clients/clients.controller';
 import { DijkstraService } from '../../dijkstra/dijkstra.service';
 import { CreateClientDto } from 'src/clients/dto/create-clients.dto';
@@ -66,7 +66,7 @@ describe('ClientsService', () => {
     });
 
     it('should return all clients', async () => {
-      const expectedClients: User[] = [
+      const expectedClients: Client[] = [
         {
           id: '1',
           name: 'Test1',

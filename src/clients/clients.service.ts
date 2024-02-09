@@ -7,6 +7,8 @@ import {
 import { PG_CONNECTION } from '../db-module/db-module.module';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { CreateClientResponseDto } from './dto/response/create-clients.response.dto';
+import { Client } from '../db-module/entity/client.entity';
+import { DeleteClientResponseDto } from './dto/response/delete-client.response.dto';
 
 @Injectable()
 export class ClientsService implements OnModuleInit {
@@ -73,5 +75,16 @@ export class ClientsService implements OnModuleInit {
       x: createClientDto.x,
       y: createClientDto.y,
     };
+  }
+
+  async delete(clientId: string): Promise<DeleteClientResponseDto> {
+    const query = `DELETE FROM clients WHERE id='${clientId}'`;
+
+    const client: Client = await this.findAll({ id: `${clientId}` });
+    const deletedClient: Client = client;
+
+    await this.conn.query(query);
+
+    return { id: deletedClient[0].id, email: deletedClient[0].email };
   }
 }

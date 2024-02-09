@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Query,
   UsePipes,
@@ -10,7 +12,8 @@ import {
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { DijkstraService } from '../dijkstra/dijkstra.service';
-import { User } from '../db-module/entity/user.entity';
+import { Client } from '../db-module/entity/client.entity';
+import { DeleteClientResponseDto } from './dto/response/delete-client.response.dto';
 
 @Controller('clients')
 export class ClientsController {
@@ -32,7 +35,7 @@ export class ClientsController {
 
   @Get('/ordinate-points')
   async dijkstra() {
-    const users: User[] = await this.clientsService.findAll();
+    const users: Client[] = await this.clientsService.findAll();
 
     const points = users.map((user) => ({
       id: user.id,
@@ -41,5 +44,12 @@ export class ClientsController {
       y: user.y,
     }));
     return this.dijkstraService.dijkstra(points);
+  }
+
+  @Delete('/:clientId')
+  async delete(
+    @Param('clientId') clientId: string,
+  ): Promise<DeleteClientResponseDto> {
+    return await this.clientsService.delete(clientId);
   }
 }
