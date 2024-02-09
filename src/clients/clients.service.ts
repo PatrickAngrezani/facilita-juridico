@@ -74,26 +74,4 @@ export class ClientsService implements OnModuleInit {
       y: createClientDto.y,
     };
   }
-
-  async map() {
-    const res = await this.conn.query('SELECT * FROM clients');
-    const clients = res.rows;
-
-    const maxX = Math.max(...clients.map((client) => client.x));
-    const maxY = Math.max(...clients.map((client) => client.y));
-
-    const map = Array.from({ length: maxX + 1 }, () => Array(maxY + 1));
-
-    for (const client of clients) {
-      if (client.x <= maxX && client.y <= maxY) {
-        map[client.x][client.y] = client;
-      }
-    }
-
-    const filteredMap = map.map((subArray) =>
-      subArray.filter((item) => item !== null),
-    );
-
-    return filteredMap;
-  }
 }

@@ -30,11 +30,6 @@ export class ClientsController {
     return await this.clientsService.create(createClientDto);
   }
 
-  @Get('/create-map')
-  async map() {
-    return await this.clientsService.map();
-  }
-
   @Get('/ordinate-points')
   async dijkstra() {
     const users: User[] = await this.clientsService.findAll();

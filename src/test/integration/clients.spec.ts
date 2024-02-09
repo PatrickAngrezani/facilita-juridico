@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientsService } from '../clients/clients.service';
-import { User } from '../db-module/entity/user.entity';
-import { ClientsController } from '../clients/clients.controller';
-import { DijkstraService } from '../dijkstra/dijkstra.service';
+import { ClientsService } from '../../clients/clients.service';
+import { User } from '../../db-module/entity/user.entity';
+import { ClientsController } from '../../clients/clients.controller';
+import { DijkstraService } from '../../dijkstra/dijkstra.service';
+import { CreateClientDto } from 'src/clients/dto/create-clients.dto';
 
 describe('ClientsService', () => {
   let clientsService: ClientsService;
@@ -149,6 +150,33 @@ describe('ClientsService', () => {
           y: 89,
         },
       ]);
+    });
+
+    it('should create generates correct SQL query', async () => {
+      const createClientDto: CreateClientDto = {
+        email: 'testcreatefunction@getMaxListeners.com',
+        name: 'Test Create Function',
+        phoneNumber: '11995457584',
+        x: 20,
+        y: 37,
+      };
+
+      const querySpy = jest.spyOn(clientsService.conn, 'query');
+
+      const newUser = await clientsService.create(createClientDto);
+
+      expect(newUser).toBeDefined();
+      expect(newUser.email).toEqual(createClientDto.email);
+      expect(querySpy).toHaveBeenCalledWith(
+        'INSERT INTO clients (name, email, phone_number, x, y) VALUES ($1, $2, $3, $4, $5)',
+        [
+          'Test Create Function',
+          'testcreatefunction@getMaxListeners.com',
+          '11995457584',
+          20,
+          37,
+        ],
+      );
     });
   });
 });
