@@ -178,5 +178,13 @@ describe('ClientsService', () => {
         ],
       );
     });
+
+    //implements delete logics tests
+    // it('should delete all users', async () => {
+    //   const users = await clientsService.findAll();
+    //   console.log(users);
+
+    //   await clientsService.delete();
+    // });
   });
 });

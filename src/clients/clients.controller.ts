@@ -13,7 +13,6 @@ import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { DijkstraService } from '../dijkstra/dijkstra.service';
 import { Client } from '../db-module/entity/client.entity';
-import { DeleteClientResponseDto } from './dto/response/delete-client.response.dto';
 
 @Controller('clients')
 export class ClientsController {
@@ -46,10 +45,8 @@ export class ClientsController {
     return this.dijkstraService.dijkstra(points);
   }
 
-  @Delete('/:clientId')
-  async delete(
-    @Param('clientId') clientId: string,
-  ): Promise<DeleteClientResponseDto> {
+  @Delete('/:clientId?')
+  async delete(@Param('clientId') clientId?: string): Promise<string> {
     return await this.clientsService.delete(clientId);
   }
 }

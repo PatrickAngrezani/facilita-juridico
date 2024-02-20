@@ -2,13 +2,12 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { PG_CONNECTION } from '../db-module/db-module.module';
 import { CreateClientDto } from './dto/create-clients.dto';
 import { CreateClientResponseDto } from './dto/response/create-clients.response.dto';
-import { Client } from '../db-module/entity/client.entity';
-import { DeleteClientResponseDto } from './dto/response/delete-client.response.dto';
 
 @Injectable()
 export class ClientsService implements OnModuleInit {
@@ -77,14 +76,25 @@ export class ClientsService implements OnModuleInit {
     };
   }
 
-  async delete(clientId: string): Promise<DeleteClientResponseDto> {
-    const query = `DELETE FROM clients WHERE id='${clientId}'`;
+  async delete(clientId?: string): Promise<string> {
+    try {
+      const query = clientId
+        ? `DELETE FROM clients WHERE id='${clientId}'`
+        : 'DELETE FROM CLIENTS';
 
-    const client: Client = await this.findAll({ id: `${clientId}` });
-    const deletedClient: Client = client;
+      const response = clientId
+        ? `Id deleted succesfully: ${clientId}`
+        : 'All users deleted succesfully';
 
-    await this.conn.query(query);
+      const result = await this.conn.query(query);
 
-    return { id: deletedClient[0].id, email: deletedClient[0].email };
+      if (result.rowCount === 0) {
+        throw new NotFoundException();
+      } else {
+        return response;
+      }
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 }
