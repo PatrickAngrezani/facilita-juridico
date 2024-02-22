@@ -23,7 +23,7 @@ export class ClientsController {
 
   @Get()
   async findAll(@Query() query: any) {
-    return await this.clientsService.findAll(query);
+    return await this.clientsService.findClients(query);
   }
 
   @Post()
@@ -34,7 +34,7 @@ export class ClientsController {
 
   @Get('/ordinate-points')
   async dijkstra() {
-    const users: Client[] = await this.clientsService.findAll();
+    const users: Client[] = await this.clientsService.findClients();
 
     const points = users.map((user) => ({
       id: user.id,
@@ -46,7 +46,7 @@ export class ClientsController {
   }
 
   @Delete('/:clientId?')
-  async delete(@Param('clientId') clientId?: string): Promise<string> {
+  async delete(@Param('clientId') clientId?: number): Promise<string> {
     return await this.clientsService.delete(clientId);
   }
 }

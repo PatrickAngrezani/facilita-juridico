@@ -29,7 +29,7 @@ export class ClientsService implements OnModuleInit {
     );
   }
 
-  async findAll(query?: any) {
+  async findClients(query?: any) {
     let whereClause = '';
     const values = [];
     for (const key in query) {
@@ -76,17 +76,20 @@ export class ClientsService implements OnModuleInit {
     };
   }
 
-  async delete(clientId?: string): Promise<string> {
+  async delete(clientId?: number): Promise<string> {
     try {
-      const query = clientId
-        ? `DELETE FROM clients WHERE id='${clientId}'`
-        : 'DELETE FROM CLIENTS';
+      let query: string;
+      let response: string;
 
-      const response = clientId
-        ? `Id deleted succesfully: ${clientId}`
-        : 'All users deleted succesfully';
+      if (clientId) {
+        query = 'DELETE FROM clients WHERE id = $1';
+        response = `Id deleted successfully: ${clientId}`;
+      } else {
+        query = 'DELETE FROM CLIENTS';
+        response = 'All users deleted successfully';
+      }
 
-      const result = await this.conn.query(query);
+      const result = await this.conn.query(query, [clientId]);
 
       if (result.rowCount === 0) {
         throw new NotFoundException();

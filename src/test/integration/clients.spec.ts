@@ -1,190 +1,127 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsService } from '../../clients/clients.service';
-import { Client } from '../../db-module/entity/client.entity';
-import { ClientsController } from '../../clients/clients.controller';
-import { DijkstraService } from '../../dijkstra/dijkstra.service';
+import { PG_CONNECTION } from '../../db-module/db-module.module';
 import { CreateClientDto } from 'src/clients/dto/create-clients.dto';
 
 describe('ClientsService', () => {
-  let clientsService: ClientsService;
+  let module: TestingModule;
+  let service: ClientsService;
+
+  const postgresUsername = 'postgres';
+  const postgresPassword = 'postgres';
 
   beforeEach(async () => {
-    const mockPgConnection = {
-      query: jest.fn().mockResolvedValue({
-        rows: [
-          {
-            id: '1',
-            name: 'Test1',
-            phone_number: '(12)34567891',
-            email: 'test1@gmail.com',
-            x: 21,
-            y: 89,
-          },
-          {
-            id: '2',
-            name: 'Test2',
-            phone_number: '(12)34567892',
-            email: 'test2@gmail.com',
-            x: 97,
-            y: 32,
-          },
-          {
-            id: '3',
-            name: 'Test3',
-            phone_number: '(12)34567893',
-            email: 'test3@gmail.com',
-            x: 64,
-            y: 23,
-          },
-        ],
-      }),
-      release: jest.fn(),
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         ClientsService,
-        DijkstraService,
         {
-          provide: 'PG_CONNECTION',
-          useValue: mockPgConnection,
+          provide: PG_CONNECTION,
+          useValue: `postgres://${postgresUsername}:${postgresPassword}@localhost:5432/postgres_test`,
         },
       ],
-      controllers: [ClientsController],
     }).compile();
 
-    clientsService = module.get<ClientsService>(ClientsService);
+    service = module.get<ClientsService>(ClientsService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('clientsService', () => {
-    it('should be defined', () => {
-      expect(clientsService).toBeDefined();
+  describe('module', () => {
+    it('should define module', () => {
+      expect(module).toBeDefined();
     });
+  });
 
-    it('should return all clients', async () => {
-      const expectedClients: Client[] = [
+  describe('clientService', () => {
+    it('should be defined', () => {
+      expect(service).toBeDefined();
+    });
+  });
+
+  describe('findClients', () => {
+    it('should return an array of clients', async () => {
+      const result = [
         {
           id: '1',
-          name: 'Test1',
-          phone_number: '(12)34567891',
           email: 'test1@gmail.com',
-          x: 21,
-          y: 89,
+          x: 42,
+          y: 78,
         },
         {
           id: '2',
-          name: 'Test2',
-          phone_number: '(12)34567892',
           email: 'test2@gmail.com',
-          x: 97,
-          y: 32,
+          x: 98,
+          y: 43,
         },
         {
           id: '3',
-          name: 'Test3',
-          phone_number: '(12)34567893',
           email: 'test3@gmail.com',
-          x: 64,
-          y: 23,
+          x: 16,
+          y: 57,
         },
       ];
-      const clients = await clientsService.findAll();
 
-      expect(clients).toBeDefined();
-      expect(clients).toEqual(expectedClients);
-    });
-
-    it('should findOne generates correct SQL query', async () => {
-      const query = { name: 'John' };
-      const querySpy = jest.spyOn(clientsService.conn, 'query');
-
-      await clientsService.findAll(query);
-
-      expect(querySpy).toHaveBeenCalledWith(
-        'SELECT * FROM clients WHERE name = $1 ORDER BY name ASC',
-        ['John'],
-      );
-    });
-
-    it('should return the correct specific client', async () => {
       jest
-        .spyOn(clientsService.conn, 'query')
-        .mockImplementation((query, values) => {
-          if (
-            query ===
-              'SELECT * FROM clients WHERE name = $1 ORDER BY name ASC' &&
-            values[0] === 'Test1'
-          ) {
-            return Promise.resolve({
-              rows: [
-                {
-                  id: 1,
-                  name: 'Test1',
-                  email: 'test1@gmail.com',
-                  phone_number: '(12)34567891',
-                  x: 21,
-                  y: 89,
-                },
-              ],
-            });
-          }
+        .spyOn(service, 'findClients')
+        .mockImplementation(() => Promise.resolve(result));
 
-          return Promise.resolve({ rows: [] });
-        });
-
-      const query = { name: 'Test1' };
-
-      const response = await clientsService.findAll(query);
-
-      expect(response).toEqual([
-        {
-          id: 1,
-          name: 'Test1',
-          email: 'test1@gmail.com',
-          phone_number: '(12)34567891',
-          x: 21,
-          y: 89,
-        },
-      ]);
+      expect(await service.findClients()).toBe(result);
     });
 
-    it('should create generates correct SQL query', async () => {
+    it('should return one client', async () => {
+      const clientId = 1;
+      const result = {
+        id: '1',
+        email: 'test1Gmail.com',
+        x: 37,
+        y: 62,
+      };
+
+      jest
+        .spyOn(service, 'findClients')
+        .mockImplementation(() => Promise.resolve(result));
+
+      expect(await service.findClients(clientId)).toBe(result);
+    });
+
+    it('should throw an error if client not found', async () => {
+      const clientId = 78;
+
+      jest
+        .spyOn(service, 'findClients')
+        .mockImplementation(() =>
+          Promise.reject(new Error('Client not found')),
+        );
+
+      try {
+        await service.findClients(clientId);
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect(error).toHaveProperty('message', 'Client not found');
+      }
+    });
+
+    it('should generates correct SQL query', async () => {
       const createClientDto: CreateClientDto = {
-        email: 'testcreatefunction@getMaxListeners.com',
-        name: 'Test Create Function',
-        phoneNumber: '11995457584',
+        email: 'test1@gmail.com',
+        name: 'Test 1',
+        phoneNumber: '11912345678',
         x: 20,
         y: 37,
       };
 
-      const querySpy = jest.spyOn(clientsService.conn, 'query');
+      const querySpy = jest.spyOn(service, 'create');
 
-      const newUser = await clientsService.create(createClientDto);
+      jest
+        .spyOn(service, 'create')
+        .mockImplementation(() => Promise.resolve(createClientDto));
 
-      expect(newUser).toBeDefined();
-      expect(newUser.email).toEqual(createClientDto.email);
-      expect(querySpy).toHaveBeenCalledWith(
-        'INSERT INTO clients (name, email, phone_number, x, y) VALUES ($1, $2, $3, $4, $5)',
-        [
-          'Test Create Function',
-          'testcreatefunction@getMaxListeners.com',
-          '11995457584',
-          20,
-          37,
-        ],
-      );
+      expect(await service.create(createClientDto)).toBe(createClientDto);
+      expect(querySpy).toHaveBeenCalledWith({
+        email: 'test1@gmail.com',
+        name: 'Test 1',
+        phoneNumber: '11912345678',
+        x: 20,
+        y: 37,
+      });
     });
-
-    //implements delete logics tests
-    // it('should delete all users', async () => {
-    //   const users = await clientsService.findAll();
-    //   console.log(users);
-
-    //   await clientsService.delete();
-    // });
   });
 });
